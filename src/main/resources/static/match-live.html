@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Live Match Center — CricPulse</title>
+    <!-- Fonts & Icons -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@600;700;800&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <!-- CricPulse Design System -->
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+
+    <!-- Navigation Bar -->
+    <nav class="navbar navbar-expand-lg navbar-cp">
+        <div class="container">
+            <a class="cp-logo" href="/index.html">
+                <div class="cp-logo-icon">
+                    <i class="bi bi-activity"></i>
+                </div>
+                <span>Cric<span style="color: var(--cp-emerald);">Pulse</span></span>
+            </a>
+            <button class="navbar-toggler border-0 text-white" type="button" data-bs-toggle="collapse" data-bs-target="#cpNav">
+                <i class="bi bi-list fs-2"></i>
+            </button>
+            <div class="collapse navbar-collapse" id="cpNav">
+                <ul class="navbar-nav mx-auto mb-2 mb-lg-0">
+                    <li class="nav-item">
+                        <a class="nav-link cp-nav-link" href="/index.html"><i class="bi bi-speedometer2 me-1"></i> Dashboard</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link cp-nav-link active" href="/match-live.html"><i class="bi bi-broadcast me-1 text-danger"></i> Live Match</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link cp-nav-link" href="/results.html"><i class="bi bi-trophy me-1"></i> Results</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link cp-nav-link" href="/players.html"><i class="bi bi-people me-1"></i> Players & Stats</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link cp-nav-link" href="/admin.html"><i class="bi bi-shield-lock me-1"></i> Admin Console</a>
+                    </li>
+                </ul>
+                <div class="d-flex align-items-center gap-2">
+                    <span id="sseConnectionIndicator" class="live-stream-status">
+                        <span class="pulse-dot"></span> <span id="sseStatusText">Connecting...</span>
+                    </span>
+                    <a href="/admin.html" class="btn btn-sm btn-cp-primary">
+                        <i class="bi bi-pencil-square me-1"></i> Score Ball
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Container -->
+    <main class="container my-4">
+
+        <!-- Live Matches Switcher Bar -->
+        <div class="d-flex align-items-center gap-2 mb-3 overflow-auto pb-1" id="liveMatchSwitcherBar">
+            <!-- Dynamic live match selector buttons -->
+        </div>
+
+        <!-- Match Header Info Card -->
+        <div class="cp-card cp-card-featured mb-4" id="matchHeaderCard">
+            <div class="d-flex flex-wrap justify-content-between align-items-center mb-3">
+                <div class="d-flex align-items-center gap-2">
+                    <span id="matchStatusBadge" class="badge-live"><span class="pulse-dot"></span> LIVE</span>
+                    <span id="matchFormatBadge" class="badge-format">T20</span>
+                    <span id="matchVenue" class="text-secondary small"><i class="bi bi-geo-alt me-1"></i>Loading venue...</span>
+                </div>
+                <div class="d-flex gap-2">
+                    <a id="fullScorecardBtn" href="#" class="btn btn-sm btn-cp-outline">
+                        <i class="bi bi-clipboard2-data me-1"></i> Full Scorecard
+                    </a>
+                </div>
+            </div>
+
+            <h1 class="h4 text-white mb-2" id="matchTitle">ICC Men's T20 Championship — Grand Final</h1>
+            <p class="text-cyan small mb-3" id="tossResultText">Loading toss information...</p>
+
+            <!-- Big Live Score Display -->
+            <div class="row align-items-center py-3 my-2 border-top border-bottom border-secondary border-opacity-25">
+                <div class="col-md-7">
+                    <div class="d-flex align-items-baseline gap-3">
+                        <span class="display-4 brand-font fw-bold text-white" id="liveScoreBig">0/0</span>
+                        <span class="h4 text-secondary mb-0" id="liveOversBig">(0.0 ov)</span>
+                        <span class="badge bg-dark border border-secondary text-white px-2 py-1" id="liveBattingTeamPill">IND</span>
+                    </div>
+                    <div class="mt-2 text-warning fw-semibold" id="targetChaseBanner">
+                        <!-- e.g. England need 47 runs in 26 balls (Target: 189) -->
+                    </div>
+                </div>
+
+                <div class="col-md-5 mt-3 mt-md-0">
+                    <div class="row g-2 text-center">
+                        <div class="col-6">
+                            <div class="p-2 rounded bg-dark border border-secondary border-opacity-50">
+                                <span class="text-secondary small d-block">Current Run Rate</span>
+                                <span class="h5 brand-font text-cyan mb-0" id="statCrr">0.00</span>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="p-2 rounded bg-dark border border-secondary border-opacity-50">
+                                <span class="text-secondary small d-block">Required Run Rate</span>
+                                <span class="h5 brand-font text-warning mb-0" id="statRrr">—</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Balls Delivered Strip -->
+            <div class="d-flex flex-wrap align-items-center gap-2 pt-2">
+                <span class="text-secondary small fw-bold text-uppercase me-2">Recent Balls:</span>
+                <div id="recentBallsContainer" class="d-flex flex-wrap align-items-center">
+                    <!-- Color-coded ball chips injected dynamically -->
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-4">
+            <!-- Left Column: Batting & Bowling At The Crease -->
+            <div class="col-lg-7">
+                <!-- Batters at Crease -->
+                <div class="cp-card mb-4">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h2 class="h5 mb-0 brand-font text-white"><i class="bi bi-person me-2 text-success"></i>Batters at Crease</h2>
+                        <span class="badge bg-dark border border-secondary text-secondary small">Live In-Play</span>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="cp-table">
+                            <thead>
+                                <tr>
+                                    <th>Batter</th>
+                                    <th class="text-center">R</th>
+                                    <th class="text-center">B</th>
+                                    <th class="text-center">4s</th>
+                                    <th class="text-center">6s</th>
+                                    <th class="text-end">SR</th>
+                                </tr>
+                            </thead>
+                            <tbody id="battersCreaseTable">
+                                <tr>
+                                    <td colspan="6" class="text-center text-secondary py-3">Loading active batters...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Current Bowler -->
+                <div class="cp-card mb-4">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h2 class="h5 mb-0 brand-font text-white"><i class="bi bi-disc me-2 text-info"></i>Current Bowler</h2>
+                        <span class="badge bg-dark border border-secondary text-secondary small">Active Spell</span>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="cp-table">
+                            <thead>
+                                <tr>
+                                    <th>Bowler</th>
+                                    <th class="text-center">O</th>
+                                    <th class="text-center">M</th>
+                                    <th class="text-center">R</th>
+                                    <th class="text-center">W</th>
+                                    <th class="text-end">ECON</th>
+                                </tr>
+                            </thead>
+                            <tbody id="bowlerCreaseTable">
+                                <tr>
+                                    <td colspan="6" class="text-center text-secondary py-3">Loading active bowler...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Quick Action Callouts for Admin Scoring -->
+                <div class="cp-card bg-gradient text-center py-4 border-info border-opacity-25">
+                    <h5 class="text-white mb-2">Want to score or update this match live?</h5>
+                    <p class="text-secondary small mb-3">Open the Admin Scoring Console to record deliveries, boundaries, wickets, and strike rotation in real time.</p>
+                    <a href="/admin.html" class="btn btn-cp-primary">
+                        <i class="bi bi-sliders me-1"></i> Open Admin Live Scoring Console
+                    </a>
+                </div>
+            </div>
+
+            <!-- Right Column: Live Ball-by-Ball Commentary -->
+            <div class="col-lg-5">
+                <div class="cp-card h-100">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h2 class="h5 mb-0 brand-font text-white"><i class="bi bi-chat-left-text me-2 text-cyan"></i>Live Commentary</h2>
+                        <span class="badge bg-dark border border-secondary text-cyan small" id="commentaryCount">Last 12 Balls</span>
+                    </div>
+
+                    <!-- Timeline -->
+                    <div id="liveCommentaryTimeline" style="max-height: 520px; overflow-y: auto; padding-right: 5px;">
+                        <p class="text-secondary small">Listening for live ball commentary...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer-cp">
+        <div class="container text-center">
+            <p class="text-secondary small mb-0">CricPulse — Live Cricket Score Management System</p>
+        </div>
+    </footer>
+
+    <!-- Bootstrap & Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/js/api.js"></script>
+    <script src="/js/live-match.js"></script>
+</body>
+</html>
